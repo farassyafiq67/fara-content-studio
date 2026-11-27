@@ -648,13 +648,27 @@
       throw new Error('Koneksi internet terputus sementara (' + (lastErr?.message || 'Load failed') + '). Pastikan Wi-Fi stabil dan layar tidak terkunci.');
     }
 
+    function safeParseJSON(rawText) {
+      let cleaned = (rawText || '').replace(/```json|```/gi, '').trim();
+      const firstBrace = cleaned.indexOf('{');
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+      }
+      const parsed = JSON.parse(cleaned);
+      if (!parsed || !Array.isArray(parsed.hooks)) {
+        throw new Error('Struktur data AI tidak lengkap.');
+      }
+      return parsed;
+    }
+
     async function requestModelGenerate(modelName, apiKey, parts) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
       const payload = {
         contents: [{ parts }],
         generationConfig: {
-          temperature: 0.75,
-          maxOutputTokens: 2048,
+          temperature: 0.7,
+          maxOutputTokens: 8192,
           responseMimeType: "application/json"
         }
       };
@@ -675,9 +689,19 @@
 
       const data = await res.json();
       const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) throw new Error('Respons AI kosong.');
-      const cleaned = rawText.replace(/```json|```/g, '').trim();
-      return JSON.parse(cleaned);
+      if (!rawText) {
+        const err = new Error('Respons AI kosong.');
+        err.status = 502;
+        throw err;
+      }
+
+      try {
+        return safeParseJSON(rawText);
+      } catch (parseErr) {
+        const err = new Error('Format respons AI terpotong, mencoba ulang...');
+        err.status = 422;
+        throw err;
+      }
     }
 
     async function discoverActiveFlashModel(apiKey) {
@@ -722,8 +746,8 @@
           return await requestModelGenerate(model, apiKey, parts);
         } catch (err) {
           if (!firstError) firstError = err.message;
-          if (!err.status) throw err; // Error jaringan setelah retry langsung tampilkan
-          if ([400, 404, 429, 500, 503].includes(err.status)) continue;
+          if (!err.status) throw err;
+          if ([400, 404, 422, 429, 500, 502, 503].includes(err.status)) continue;
           throw err;
         }
       }
@@ -740,7 +764,7 @@
 
     function getSinglePlanSchemaText() {
       return `{
-  "diagnosis": "Khusus mode rescue: jelaskan singkat 2-3 kalimat kenapa video sebelumnya sepi/skip (kosongkan string jika bukan mode rescue)",
+  "diagnosis": "Khusus mode rescue: jelaskan singkat 2 kalimat kenapa video sebelumnya sepi (kosongkan string jika bukan mode rescue)",
   "productName": "Nama singkat produk/outfit",
   "framingType": "FULL BODY / MEDIUM SHOT / CLOSE-UP / GREEN SCREEN",
   "hooks": [
@@ -749,7 +773,7 @@
       "fontStyle": "classic",
       "bgColor": "#111827",
       "textColor": "#FFFFFF",
-      "reason": "Alasan psikologis kenapa hook ini menahan penonton"
+      "reason": "Alasan singkat kenapa hook ini menarik"
     },
     {
       "text": "Opsi kalimat hook kedua",
@@ -771,35 +795,35 @@
     "top": { "item": "Atasan / Fokus area wajah", "colorName": "Warna", "hex": "#FFFFFF" },
     "bottom": { "item": "Bawahan / Pendukung", "colorName": "Warna", "hex": "#3B82F6" },
     "shoes": { "item": "Alas kaki / Aksesori", "colorName": "Warna", "hex": "#1F2937" },
-    "silhouetteTip": "Trik cara pakai agar TB 155 cm BB 50 kg tampak jenjang & kontras dengan tembok polos"
+    "silhouetteTip": "Trik singkat agar TB 155 cm BB 50 kg tampak jenjang & kontras dengan tembok polos"
   },
   "storyboard": [
     {
       "time": "00:00 - 00:03",
       "framing": "FULL BODY / CLOSE-UP / GREEN SCREEN",
       "cameraHeight": "Posisi tinggi HP",
-      "action": "Gerakan pembuka Fara di depan kamera",
-      "visualCue": "Fokus visual yang harus terlihat"
+      "action": "Gerakan pembuka Fara",
+      "visualCue": "Fokus visual"
     },
     {
       "time": "00:04 - 00:10",
       "framing": "MEDIUM SHOT / CLOSE-UP / GREEN SCREEN",
       "cameraHeight": "Posisi tinggi HP",
-      "action": "Gerakan menunjukkan detail bahan/potongan/pemakaian",
-      "visualCue": "Fokus detail produk"
+      "action": "Gerakan detail produk",
+      "visualCue": "Fokus detail"
     },
     {
       "time": "00:11 - 00:15",
       "framing": "CLOSE-UP",
       "cameraHeight": "Sejajar mata",
-      "action": "Pose akhir & menunjuk arah keranjang kuning kiri bawah",
-      "visualCue": "Ekspresi ramah & ajakan cek keranjang"
+      "action": "Pose akhir & tunjuk keranjang kuning",
+      "visualCue": "Ekspresi ramah"
     }
   ],
-  "voiceOver": "Naskah lengkap 15-20 detik dengan tanda jeda (/) agar mudah dibaca Fara",
+  "voiceOver": "Naskah 15-20 detik dengan tanda jeda (/) agar mudah dibaca Fara",
   "capcut": {
-    "soundKeyword": "Kata kunci pencarian lagu/sound viral di TikTok & CapCut yang cocok",
-    "soundTip": "Saran tempo lagu dan batas volume (8-12%) agar suara Fara tetap jernih",
+    "soundKeyword": "Kata kunci lagu/sound viral di TikTok",
+    "soundTip": "Saran tempo & volume (8-12%)",
     "adjust": {
       "kecerahan": "+8",
       "kontras": "+10",
@@ -807,17 +831,17 @@
       "pertajam": "+25"
     },
     "steps": [
-      "Langkah 1 spesifik potong jeda klip di CapCut...",
-      "Langkah 2 pasang teks hook & latar belakang...",
-      "Langkah 3 aktifkan kurangi kebisingan & atur volume musik..."
+      "Langkah 1 potong jeda klip di CapCut",
+      "Langkah 2 pasang teks hook & latar belakang",
+      "Langkah 3 aktifkan kurangi kebisingan & atur volume musik"
     ]
   },
   "postingGuide": {
-    "bestTime": "Jam tayang terbaik WIB (misal: 12.00 atau 19.00 WIB)",
+    "bestTime": "12.00 / 19.00 WIB",
     "warmupSteps": [
-      "Cari 2 video niche serupa di pencarian TikTok dan tonton sampai habis 10 menit sebelum upload",
-      "Tinggalkan 1 komentar relevan pada video niche tersebut agar algoritma mengenali audiens",
-      "Pastikan sinyal stabil lalu upload dan langsung sematkan komentar pertama"
+      "Tonton 2 video niche serupa sampai habis 10 menit sebelum upload",
+      "Beri 1 komentar relevan pada video niche tersebut",
+      "Upload video lalu langsung sematkan komentar pertama"
     ]
   },
   "distribution": {
@@ -827,9 +851,9 @@
     "tiktokHashtags": "#tag1 #tag2 #tag3 #tag4",
     "tiktokBasketTitle": "Judul Keranjang Max 30 Huruf",
     "tiktokPinnedComment": "Komentar pancingan untuk disematkan",
-    "shopeeVideo": "Caption + hashtag khusus Shopee Video",
-    "fbReels": "Caption FB Reels + ajakan cek linktr.ee/racunbysofia",
-    "waPromo": "Format pesan singkat untuk saluran WhatsApp SUKA NGEWAR"
+    "shopeeVideo": "Caption + hashtag Shopee Video",
+    "fbReels": "Caption FB Reels + linktr.ee/racunbysofia",
+    "waPromo": "Pesan singkat saluran WhatsApp SUKA NGEWAR"
   }
 }`;
     }
@@ -855,20 +879,21 @@
       loadingBox.classList.remove('hidden');
       btn.disabled = true;
 
-      const baseRules = `Kamu adalah Creative Director & TikTok Affiliate Strategist khusus untuk kreator bernama Fara (@faraddilla_), niche Fashion Hijab, OOTD & Beauty, postur TB 155 cm / BB 50 kg, latar tembok polos.
+      const baseRules = `Kamu adalah Creative Director & TikTok Affiliate Strategist khusus untuk Fara (@faraddilla_), niche Fashion Hijab, OOTD & Beauty, postur TB 155 cm / BB 50 kg, latar tembok polos.
 Aturan wajib:
-1. DILARANG keras menulis nama merek/produk di 3 detik pertama (teks hook harus berbasis masalah, rasa penasaran, atau solusi ukuran TB 155 / BB 50).
-2. Jika sampleMode = "greenscreen", set semua framing storyboard ke "GREEN SCREEN" dan arahkan gaya presenter di depan layar katalog produk.
-3. Jika kategori = "Makeup & Skincare", fokuskan storyboard ke framing "CLOSE-UP" area wajah/mata/bibir.
-4. Gaya bahasa naskah voice over harus santai, jujur seperti rekomendasi teman, dan sertakan tanda jeda (/) agar mudah dibaca Fara.`;
+1. DILARANG menulis nama merek/produk di 3 detik pertama (teks hook harus berbasis masalah, rasa penasaran, atau solusi TB 155 / BB 50).
+2. Jika sampleMode = "greenscreen", set framing storyboard ke "GREEN SCREEN" (presenter di depan layar katalog).
+3. Jika kategori = "Makeup & Skincare", set framing storyboard ke "CLOSE-UP" area wajah/mata/bibir.
+4. Gaya bahasa naskah voice over santai & jujur dengan tanda jeda (/).
+5. Tulis tiap nilai string secara ringkas, padat, dan satu baris (jangan memakai tanda kutip ganda di dalam nilai teks).`;
 
       try {
         if (currentWorkMode === 'batch') {
           currentBatchList = [];
           const batchAngles = [
-            'Video ke-1 dari 3: Fokus pada MASALAH UTAMA pemakaian sehari-hari & solusinya (ambil item pertama jika user menyebut beberapa produk, atau variasi angle pertama jika 1 produk).',
-            'Video ke-2 dari 3: Fokus pada PEMBUKTIAN DETAIL / HASIL PEMAKAIAN / BEFORE-AFTER yang berbeda total dari konsep sebelumnya agar anti-spam.',
-            'Video ke-3 dari 3: Fokus pada TRIK PEMAKAIAN / REKOMENDASI HEMAT / KECOCOKAN POSTUR TB 155 BB 50 yang berbeda total dari 2 video sebelumnya.'
+            'Video ke-1 dari 3: Fokus pada MASALAH UTAMA pemakaian sehari-hari & solusinya (ambil item/tema pertama dari deskripsi user).',
+            'Video ke-2 dari 3: Fokus pada PEMBUKTIAN DETAIL / HASIL PEMAKAIAN / BEFORE-AFTER yang berbeda dari konsep sebelumnya.',
+            'Video ke-3 dari 3: Fokus pada TRIK PEMAKAIAN / REKOMENDASI HEMAT / KECOCOKAN POSTUR TB 155 BB 50 yang berbeda dari 2 video sebelumnya.'
           ];
 
           for (let i = 0; i < 3; i++) {
@@ -885,7 +910,7 @@ Input user:
 - Ketersediaan Barang: ${sampleMode}
 - Deskripsi: ${desc || 'Lihat foto terlampir'}
 
-Keluarkan HANYA JSON valid dengan struktur persis berikut:
+Keluarkan HANYA JSON valid sesuai struktur ini:
 ${getSinglePlanSchemaText()}`;
 
             const itemData = await callGeminiWithFallback(batchPrompt, uploadedImageBase64, uploadedImageMime);
@@ -902,7 +927,7 @@ ${getSinglePlanSchemaText()}`;
           loadingSub.textContent = 'Menyesuaikan proporsi TB 155 cm / BB 50 kg, audio viral & jadwal posting';
 
           const modeInstruction = currentWorkMode === 'rescue'
-            ? 'Tugas: Analisis penyebab video lama user sepi/stuck 200 views pada field "diagnosis", lalu buat versi perbaikan total yang jauh lebih memancing rasa penasaran.'
+            ? 'Tugas: Analisis penyebab video lama user sepi/stuck 200 views pada field "diagnosis", lalu buat versi perbaikan total yang lebih memancing rasa penasaran.'
             : 'Tugas: Buat panduan produksi 1 video lengkap yang siap dieksekusi.';
           const systemPrompt = `${baseRules}
 ${modeInstruction}
@@ -911,7 +936,7 @@ Input user:
 - Ketersediaan Barang: ${sampleMode}
 - Deskripsi: ${desc || 'Lihat foto terlampir'}
 
-Keluarkan HANYA JSON valid dengan struktur persis berikut:
+Keluarkan HANYA JSON valid sesuai struktur ini:
 ${getSinglePlanSchemaText()}`;
 
           const data = await callGeminiWithFallback(systemPrompt, uploadedImageBase64, uploadedImageMime);
@@ -922,7 +947,7 @@ ${getSinglePlanSchemaText()}`;
         }
       } catch (err) {
         if (currentBatchList.length > 0) {
-          alert(`Berhasil membuat ${currentBatchList.length} dari 3 video sebelum koneksi terputus: ${err.message}`);
+          alert(`Berhasil membuat ${currentBatchList.length} dari 3 video: ${err.message}`);
         } else {
           alert('Terjadi kendala: ' + err.message);
         }
