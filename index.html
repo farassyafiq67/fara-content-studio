@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Fara Studio" />
-  <title>Fara Content Studio — Pilihan 1 (1 Video Fokus)</title>
+  <title>Fara Content Studio — All-in-One</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,7 +24,6 @@
       padding-bottom: calc(var(--safe-bottom) + 28px);
       -webkit-tap-highlight-color: transparent;
     }
-    /* Mencegah layar iPhone otomatis zoom saat kolom diketik */
     input, textarea, select {
       font-size: 16px !important;
     }
@@ -75,14 +74,23 @@
       </div>
     </div>
 
-    <!-- FORM UTAMA (PILIHAN 1: 1 VIDEO FOKUS) -->
+    <!-- PILIHAN MODE KERJA (RAPI 3 TOMBOL) -->
     <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-        <div>
-          <h2 class="text-sm font-bold text-slate-900">✨ Buat Panduan Video Baru</h2>
-          <p class="text-[11px] text-slate-500">Mode 1 Video Fokus — Siap syuting & edit hari ini</p>
-        </div>
-        <span class="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 text-[10px] font-bold border border-rose-200">Pilihan 1</span>
+      <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1 rounded-xl">
+        <button onclick="switchWorkMode('single')" id="modeBtnSingle" class="py-2 px-2 rounded-lg text-[11px] sm:text-xs font-bold bg-white text-rose-600 shadow-xs transition">
+          🎬 1 Video Fokus
+        </button>
+        <button onclick="switchWorkMode('batch')" id="modeBtnBatch" class="py-2 px-2 rounded-lg text-[11px] sm:text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📦 3 Video Stok
+        </button>
+        <button onclick="switchWorkMode('rescue')" id="modeBtnRescue" class="py-2 px-2 rounded-lg text-[11px] sm:text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          🚑 Video Sepi
+        </button>
+      </div>
+
+      <div class="border-b border-slate-100 pb-2">
+        <h2 id="modeTitle" class="text-sm font-bold text-slate-900">✨ Buat Panduan 1 Video Fokus</h2>
+        <p id="modeSubtitle" class="text-[11px] text-slate-500">Siap syuting & edit hari ini dengan panduan lengkap</p>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -106,15 +114,15 @@
         </div>
       </div>
 
-      <!-- Deskripsi Video -->
+      <!-- Deskripsi Dinamis Sesuai Mode -->
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1.5">3. Deskripsikan Produk & Video yang Mau Dibuat</label>
+        <label id="descLabel" class="block text-xs font-bold text-slate-700 mb-1.5">3. Deskripsikan Produk & Video yang Mau Dibuat</label>
         <textarea id="descInput" rows="3" placeholder="Contoh: Mau bikin video celana jeans cutbray biru muda bahan melar, cocok buat tinggi 155 biar kaki kelihatan jenjang, syuting di depan tembok putih..." class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800 focus:outline-none focus:border-rose-500 focus:bg-white"></textarea>
       </div>
 
-      <!-- Upload Foto Baju / Produk -->
+      <!-- Upload Foto Produk / Screenshot Video Lama -->
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1.5">4. Foto Baju / Produk / Spot Syuting (Opsional)</label>
+        <label id="imgLabel" class="block text-xs font-bold text-slate-700 mb-1.5">4. Foto Baju / Produk / Spot Syuting (Opsional)</label>
         <div class="flex items-center gap-3">
           <label class="flex-1 cursor-pointer border-2 border-dashed border-slate-200 hover:border-rose-400 rounded-xl p-3 text-center transition bg-slate-50/50">
             <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
@@ -126,22 +134,34 @@
           <img id="imagePreview" src="" alt="Preview" class="w-14 h-14 object-cover rounded-lg" />
           <div class="text-xs text-slate-600">
             <p class="font-bold text-slate-800">Foto terlampir</p>
-            <p>AI akan menyesuaikan warna teks & styling dengan foto ini.</p>
+            <p>AI akan menyesuaikan analisis warna & visual dengan foto ini.</p>
           </div>
         </div>
       </div>
 
       <!-- Tombol Proses -->
       <button onclick="generateContent()" id="generateBtn" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-bold text-sm shadow-md shadow-rose-200 active:scale-[0.99] transition flex items-center justify-center gap-2">
-        <span>🚀 Susun Panduan Lengkap Sekarang</span>
+        <span id="generateBtnText">🚀 Susun Panduan Lengkap Sekarang</span>
       </button>
     </section>
 
     <!-- LOADING STATE -->
     <div id="loadingBox" class="hidden bg-white rounded-2xl border border-rose-100 p-8 text-center space-y-3 shadow-sm">
       <div class="w-10 h-10 border-4 border-rose-200 border-t-rose-600 rounded-full animate-spin mx-auto"></div>
-      <p class="text-sm font-bold text-slate-800">Meracik Visual Hook, Styling & Angle Kamera...</p>
-      <p class="text-xs text-slate-500">Menyesuaikan proporsi TB 155 cm / BB 50 kg & panduan CapCut HP</p>
+      <p id="loadingTitle" class="text-sm font-bold text-slate-800">Meracik Visual Hook, Styling & Angle Kamera...</p>
+      <p class="text-xs text-slate-500">Menyesuaikan proporsi TB 155 cm / BB 50 kg, audio viral & jadwal posting</p>
+    </div>
+
+    <!-- PILIHAN 3 KARTU BATCH (KHUSUS MODE 3 VIDEO STOK) -->
+    <div id="batchSelectorBox" class="hidden bg-white rounded-2xl border border-rose-200 p-4 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">📦 3 Stok Video Siap Pilih</h3>
+          <p class="text-xs text-slate-500">Ketuk salah satu kartu untuk membuka panduan lengkap 4 tab-nya</p>
+        </div>
+        <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Anti-Spam</span>
+      </div>
+      <div id="batchCardsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5"></div>
     </div>
 
     <!-- HASIL OUTPUT (4 TAB LENGKAP) -->
@@ -178,6 +198,16 @@
 
       <!-- TAB 1: VISUAL HOOK & STYLING -->
       <div id="tabPanel1" class="tab-panel space-y-4">
+
+        <!-- KARTU DIAGNOSIS VIDEO SEPI (MUNCUL OTOMATIS JIKA PAKAI MODE VIDEO SEPI) -->
+        <div id="rescueDiagnosisBox" class="hidden bg-rose-50 border border-rose-300 rounded-2xl p-4 space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🩺</span>
+            <h3 class="text-sm font-bold text-rose-950">Diagnosis Penyebab Video Sebelumnya Sepi</h3>
+          </div>
+          <p id="rescueDiagnosisText" class="text-xs text-rose-900 leading-relaxed"></p>
+        </div>
+
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-4">
           <div>
             <h3 class="text-sm font-bold text-slate-900">📱 Simulasi Visual Teks Hook (3 Detik Pertama)</h3>
@@ -241,7 +271,7 @@
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
           <div>
             <h3 class="text-sm font-bold text-slate-900">🎥 Visual Angle Kamera (Dari Awal Sampai Akhir)</h3>
-            <p class="text-xs text-slate-500">Ikuti batas bingkai & posisi kamera di setiap potongan detik</p>
+            <p class="text-xs text-slate-500">Ilustrasi otomatis menyesuaikan kategori (Makeup Close-Up / Green Screen / Full Body)</p>
           </div>
           <div id="storyboardGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
         </div>
@@ -322,9 +352,19 @@
             </div>
           </div>
 
+          <!-- Saran Kata Kunci Musik / Sound TikTok -->
+          <div class="bg-purple-50 border border-purple-200 rounded-xl p-3.5 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <h4 class="text-xs font-bold text-purple-950">🎵 Kata Kunci Musik / Sound Latar TikTok:</h4>
+              <button onclick="copyTextById('soundKeywordText', this)" class="px-2.5 py-1 rounded-lg bg-white border border-purple-300 text-purple-900 text-[11px] font-bold">Salin</button>
+            </div>
+            <p id="soundKeywordText" class="text-xs font-bold text-purple-900 bg-white px-3 py-2 rounded-lg border border-purple-200"></p>
+            <p id="soundTipText" class="text-[11px] text-purple-800"></p>
+          </div>
+
           <!-- Racikan Adjust Warna -->
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-            <h4 class="text-xs font-bold text-slate-900">🎨 Racikan Menu "Sesuaikan" (Adjust) Agar Warna Baju Akurat:</h4>
+            <h4 class="text-xs font-bold text-slate-900">🎨 Racikan Menu "Sesuaikan" (Adjust) Agar Warna Akurat:</h4>
             <div id="capcutAdjustGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center"></div>
           </div>
 
@@ -341,8 +381,19 @@
         </div>
       </div>
 
-      <!-- TAB 4: UPLOAD TIKTOK & DISTRIBUSI MULTI-PLATFORM -->
+      <!-- TAB 4: UPLOAD TIKTOK, JAM TAYANG & DISTRIBUSI MULTI-PLATFORM -->
       <div id="tabPanel4" class="tab-panel hidden space-y-4">
+
+        <!-- Panduan Jam Tayang & Checklist Interaksi Awal -->
+        <div class="bg-amber-50/80 border border-amber-300 rounded-2xl p-4 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-amber-950">⏰ Jam Tayang & Pemanasan Akun (Warm-Up)</h3>
+            <span id="bestTimeBadge" class="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-[11px] font-bold"></span>
+          </div>
+          <p class="text-xs text-amber-900">Lakukan 3 langkah pemanasan 10 menit sebelum menekan tombol Posting:</p>
+          <div id="warmupChecklist" class="space-y-2"></div>
+        </div>
+
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
           <h3 class="text-sm font-bold text-slate-900">🚀 5 Penanganan Wajib di Aplikasi TikTok Sebelum Posting</h3>
           <div class="space-y-3" id="tiktokSeoCards"></div>
@@ -438,9 +489,11 @@
       'gemini-2.5-flash-lite'
     ];
 
+    let currentWorkMode = 'single';
     let uploadedImageBase64 = null;
     let uploadedImageMime = null;
     let currentPlanData = null;
+    let currentBatchList = [];
     let copyBuffer = {};
     let tpScrollInterval = null;
     let isTpScrolling = false;
@@ -466,6 +519,52 @@
       }
     });
 
+    // Pengalih 3 Mode Kerja
+    function switchWorkMode(mode) {
+      currentWorkMode = mode;
+      const modes = ['single', 'batch', 'rescue'];
+      const btnIds = { single: 'modeBtnSingle', batch: 'modeBtnBatch', rescue: 'modeBtnRescue' };
+
+      modes.forEach(m => {
+        const el = document.getElementById(btnIds[m]);
+        if (m === mode) {
+          el.className = 'py-2 px-2 rounded-lg text-[11px] sm:text-xs font-bold bg-white text-rose-600 shadow-xs transition';
+        } else {
+          el.className = 'py-2 px-2 rounded-lg text-[11px] sm:text-xs font-bold text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+
+      const titleEl = document.getElementById('modeTitle');
+      const subEl = document.getElementById('modeSubtitle');
+      const descLabel = document.getElementById('descLabel');
+      const descInput = document.getElementById('descInput');
+      const imgLabel = document.getElementById('imgLabel');
+      const btnText = document.getElementById('generateBtnText');
+
+      if (mode === 'single') {
+        titleEl.textContent = '✨ Buat Panduan 1 Video Fokus';
+        subEl.textContent = 'Siap syuting & edit hari ini dengan panduan lengkap';
+        descLabel.textContent = '3. Deskripsikan Produk & Video yang Mau Dibuat';
+        descInput.placeholder = 'Contoh: Mau bikin video celana jeans cutbray biru muda bahan melar, cocok buat tinggi 155 biar kaki kelihatan jenjang, syuting di depan tembok putih...';
+        imgLabel.textContent = '4. Foto Baju / Produk / Spot Syuting (Opsional)';
+        btnText.textContent = '🚀 Susun Panduan Lengkap Sekarang';
+      } else if (mode === 'batch') {
+        titleEl.textContent = '📦 Buat 3 Stok Video Sekaligus (Batch)';
+        subEl.textContent = 'Menghasilkan 3 variasi konsep produk berbeda untuk stok 3 hari';
+        descLabel.textContent = '3. Sebutkan 1–3 Produk atau Tema Konten yang Mau Dibuatkan Stoknya';
+        descInput.placeholder = 'Contoh: Buatkan 3 variasi video untuk stok minggu ini: 1) Hijab sport jersey hitam, 2) Blouse rayon putih, 3) Maskara waterproof...';
+        imgLabel.textContent = '4. Foto Salah Satu Produk Utama (Opsional)';
+        btnText.textContent = '📦 Racik 3 Stok Video Sekarang';
+      } else {
+        titleEl.textContent = '🚑 Perbaiki Video Sepi (Stuck 200 Views)';
+        subEl.textContent = 'Tempel teks hook/caption video lama yang sepi untuk didiagnosis & dibuatkan versi baru';
+        descLabel.textContent = '3. Tempel Hook, Caption, atau Ceritakan Isi Video Lama yang Sepi';
+        descInput.placeholder = 'Contoh: Kemarin upload video review pashmina kaos rayon, teks depannya "Review Pashmina Viral Murah", tapi mentok di 210 views dan tidak ada yang klik keranjang...';
+        imgLabel.textContent = '4. Screenshot Video Lama atau Foto Produknya (Opsional)';
+        btnText.textContent = '🩺 Diagnosis & Buat Versi Perbaikan';
+      }
+    }
+
     // API Key Management
     function openApiModal() {
       document.getElementById('apiKeyInput').value = localStorage.getItem(STORAGE_KEY_API) || '';
@@ -486,7 +585,7 @@
       document.getElementById('apiDot').className = hasKey ? 'w-2 h-2 rounded-full bg-emerald-500' : 'w-2 h-2 rounded-full bg-red-500';
     }
 
-    // Kompresi Foto Otomatis (Aman untuk Kamera iPhone & Android)
+    // Kompresi Foto Otomatis
     function handleImageUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -533,13 +632,12 @@
       document.getElementById('clearImgBtn').classList.add('hidden');
     }
 
-    // Eksekusi 1 model spesifik
     async function requestModelGenerate(modelName, apiKey, parts) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
       const payload = {
         contents: [{ parts }],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.75,
           responseMimeType: "application/json"
         }
       };
@@ -565,7 +663,6 @@
       return JSON.parse(cleaned);
     }
 
-    // Pencari model aktif otomatis jika nama versi berubah di masa depan
     async function discoverActiveFlashModel(apiKey) {
       const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`;
       const res = await fetch(listUrl);
@@ -585,7 +682,6 @@
       return candidates.length > 0 ? candidates[candidates.length - 1] : null;
     }
 
-    // Panggil Gemini API dengan Cadangan Model Terbaru + Deteksi Otomatis
     async function callGeminiWithFallback(promptText, imgBase64, imgMime) {
       const apiKey = localStorage.getItem(STORAGE_KEY_API);
       if (!apiKey) {
@@ -624,42 +720,14 @@
       throw new Error(firstError || 'Gagal menghubungi server AI.');
     }
 
-    // Generate Panduan 1 Video Fokus
-    async function generateContent() {
-      const category = document.getElementById('categoryInput').value;
-      const sampleMode = document.getElementById('sampleModeInput').value;
-      const desc = document.getElementById('descInput').value.trim();
-
-      if (!desc && !uploadedImageBase64) {
-        return alert('Silakan ceritakan produk/video yang mau dibuat atau lampirkan fotonya.');
-      }
-
-      const loadingBox = document.getElementById('loadingBox');
-      const resultBox = document.getElementById('resultContainer');
-      const btn = document.getElementById('generateBtn');
-
-      resultBox.classList.add('hidden');
-      loadingBox.classList.remove('hidden');
-      btn.disabled = true;
-
-      const systemPrompt = `Kamu adalah Creative Director & TikTok Affiliate Strategist khusus untuk kreator bernama Fara (@faraddilla_), niche Fashion Hijab & Beauty, postur TB 155 cm / BB 50 kg.
-Aturan wajib:
-1. DILARANG keras menulis nama merek/produk di 3 detik pertama (teks hook harus berbasis masalah, rasa penasaran, atau solusi ukuran TB 155 / BB 50).
-2. Jika sampleMode = "greenscreen", sesuaikan storyboard kamera dengan konsep presenter di depan layar katalog/foto produk.
-3. Gaya bahasa naskah voice over harus santai, jujur seperti rekomendasi teman (bukan bahasa iklan kaku), sertakan tanda jeda (/) agar mudah dibaca Fara.
-
-Input user:
-- Kategori: ${category}
-- Ketersediaan Barang: ${sampleMode}
-- Deskripsi: ${desc || 'Lihat foto terlampir'}
-
-Keluarkan HANYA JSON valid dengan struktur persis berikut:
-{
+    function getSinglePlanSchemaText() {
+      return `{
+  "diagnosis": "Khusus mode rescue: jelaskan singkat 2-3 kalimat kenapa video sebelumnya sepi/skip (kosongkan string jika bukan mode rescue)",
   "productName": "Nama singkat produk/outfit",
-  "framingType": "FULL BODY / MEDIUM SHOT / CLOSE-UP (pilih yang paling pas)",
+  "framingType": "FULL BODY / MEDIUM SHOT / CLOSE-UP / GREEN SCREEN",
   "hooks": [
     {
-      "text": "Kalimat hook 3 detik pertama (maks 10 kata)",
+      "text": "Kalimat hook 3 detik pertama (maks 10 kata, DILARANG sebut merek)",
       "fontStyle": "classic",
       "bgColor": "#111827",
       "textColor": "#FFFFFF",
@@ -682,23 +750,23 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
   ],
   "styling": {
     "hijab": { "item": "Nama & model hijab", "colorName": "Warna", "hex": "#D6C7B2" },
-    "top": { "item": "Atasan", "colorName": "Warna", "hex": "#FFFFFF" },
-    "bottom": { "item": "Bawahan", "colorName": "Warna", "hex": "#3B82F6" },
-    "shoes": { "item": "Alas kaki/tas", "colorName": "Warna", "hex": "#1F2937" },
+    "top": { "item": "Atasan / Fokus area wajah", "colorName": "Warna", "hex": "#FFFFFF" },
+    "bottom": { "item": "Bawahan / Pendukung", "colorName": "Warna", "hex": "#3B82F6" },
+    "shoes": { "item": "Alas kaki / Aksesori", "colorName": "Warna", "hex": "#1F2937" },
     "silhouetteTip": "Trik cara pakai agar TB 155 cm BB 50 kg tampak jenjang & kontras dengan tembok polos"
   },
   "storyboard": [
     {
       "time": "00:00 - 00:03",
-      "framing": "FULL BODY",
-      "cameraHeight": "Sejajar pusar/dada",
+      "framing": "FULL BODY / CLOSE-UP / GREEN SCREEN",
+      "cameraHeight": "Posisi tinggi HP",
       "action": "Gerakan pembuka Fara di depan kamera",
       "visualCue": "Fokus visual yang harus terlihat"
     },
     {
       "time": "00:04 - 00:10",
-      "framing": "MEDIUM SHOT",
-      "cameraHeight": "Sejajar dada",
+      "framing": "MEDIUM SHOT / CLOSE-UP / GREEN SCREEN",
+      "cameraHeight": "Posisi tinggi HP",
       "action": "Gerakan menunjukkan detail bahan/potongan/pemakaian",
       "visualCue": "Fokus detail produk"
     },
@@ -712,6 +780,8 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
   ],
   "voiceOver": "Naskah lengkap 15-20 detik dengan tanda jeda (/) agar mudah dibaca Fara",
   "capcut": {
+    "soundKeyword": "Kata kunci pencarian lagu/sound viral di TikTok & CapCut yang cocok",
+    "soundTip": "Saran tempo lagu dan batas volume (8-12%) agar suara Fara tetap jernih",
     "adjust": {
       "kecerahan": "+8",
       "kontras": "+10",
@@ -722,6 +792,14 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       "Langkah 1 spesifik potong jeda klip di CapCut...",
       "Langkah 2 pasang teks hook & latar belakang...",
       "Langkah 3 aktifkan kurangi kebisingan & atur volume musik..."
+    ]
+  },
+  "postingGuide": {
+    "bestTime": "Jam tayang terbaik WIB (misal: 12.00 atau 19.00 WIB)",
+    "warmupSteps": [
+      "Cari 2 video niche serupa di pencarian TikTok dan tonton sampai habis 10 menit sebelum upload",
+      "Tinggalkan 1 komentar relevan pada video niche tersebut agar algoritma mengenali audiens",
+      "Pastikan sinyal stabil lalu upload dan langsung sematkan komentar pertama"
     ]
   },
   "distribution": {
@@ -736,12 +814,87 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
     "waPromo": "Format pesan singkat untuk saluran WhatsApp SUKA NGEWAR"
   }
 }`;
+    }
+
+    async function generateContent() {
+      const category = document.getElementById('categoryInput').value;
+      const sampleMode = document.getElementById('sampleModeInput').value;
+      const desc = document.getElementById('descInput').value.trim();
+
+      if (!desc && !uploadedImageBase64) {
+        return alert('Silakan isi deskripsi atau lampirkan fotonya terlebih dahulu.');
+      }
+
+      const loadingBox = document.getElementById('loadingBox');
+      const loadingTitle = document.getElementById('loadingTitle');
+      const resultBox = document.getElementById('resultContainer');
+      const batchBox = document.getElementById('batchSelectorBox');
+      const btn = document.getElementById('generateBtn');
+
+      resultBox.classList.add('hidden');
+      batchBox.classList.add('hidden');
+      loadingBox.classList.remove('hidden');
+      btn.disabled = true;
+
+      if (currentWorkMode === 'batch') {
+        loadingTitle.textContent = 'Meracik 3 Variasi Stok Video Anti-Spam...';
+      } else if (currentWorkMode === 'rescue') {
+        loadingTitle.textContent = 'Mendiagnosis Video Sepi & Menyusun Versi Baru...';
+      } else {
+        loadingTitle.textContent = 'Meracik Visual Hook, Styling & Angle Kamera...';
+      }
+
+      const baseRules = `Kamu adalah Creative Director & TikTok Affiliate Strategist khusus untuk kreator bernama Fara (@faraddilla_), niche Fashion Hijab, OOTD & Beauty, postur TB 155 cm / BB 50 kg, latar tembok polos.
+Aturan wajib:
+1. DILARANG keras menulis nama merek/produk di 3 detik pertama (teks hook harus berbasis masalah, rasa penasaran, atau solusi ukuran TB 155 / BB 50).
+2. Jika sampleMode = "greenscreen", set semua framing storyboard ke "GREEN SCREEN" dan arahkan gaya presenter di depan layar katalog produk.
+3. Jika kategori = "Makeup & Skincare", fokuskan storyboard ke framing "CLOSE-UP" area wajah/mata/bibir.
+4. Gaya bahasa naskah voice over harus santai, jujur seperti rekomendasi teman, dan sertakan tanda jeda (/) agar mudah dibaca Fara.`;
+
+      let systemPrompt = '';
+      if (currentWorkMode === 'batch') {
+        systemPrompt = `${baseRules}
+Tugas: Buat 3 VARIASI KONSEP VIDEO BERBEDA untuk stok 3 hari (berbeda angle hook, gaya outfit, atau variasi produk dari input user agar anti-spam).
+Input user:
+- Kategori: ${category}
+- Ketersediaan Barang: ${sampleMode}
+- Deskripsi: ${desc || 'Lihat foto terlampir'}
+
+Keluarkan HANYA JSON valid dengan format:
+{
+  "videos": [
+    ${getSinglePlanSchemaText()},
+    ${getSinglePlanSchemaText()},
+    ${getSinglePlanSchemaText()}
+  ]
+}`;
+      } else {
+        const modeInstruction = currentWorkMode === 'rescue'
+          ? 'Tugas: Analisis penyebab video lama user sepi/stuck 200 views pada field "diagnosis", lalu buat versi perbaikan total yang jauh lebih memancing rasa penasaran.'
+          : 'Tugas: Buat panduan produksi 1 video lengkap yang siap dieksekusi.';
+        systemPrompt = `${baseRules}
+${modeInstruction}
+Input user:
+- Kategori: ${category}
+- Ketersediaan Barang: ${sampleMode}
+- Deskripsi: ${desc || 'Lihat foto terlampir'}
+
+Keluarkan HANYA JSON valid dengan struktur persis berikut:
+${getSinglePlanSchemaText()}`;
+      }
 
       try {
         const data = await callGeminiWithFallback(systemPrompt, uploadedImageBase64, uploadedImageMime);
-        currentPlanData = data;
-        localStorage.setItem(STORAGE_KEY_LAST_RESULT, JSON.stringify(data));
-        renderResult(data);
+        if (currentWorkMode === 'batch' && Array.isArray(data.videos) && data.videos.length > 0) {
+          currentBatchList = data.videos;
+          renderBatchSelector(data.videos);
+          selectBatchVideo(0);
+        } else {
+          currentBatchList = [];
+          currentPlanData = data;
+          localStorage.setItem(STORAGE_KEY_LAST_RESULT, JSON.stringify(data));
+          renderResult(data);
+        }
       } catch (err) {
         alert('Terjadi kendala: ' + err.message);
       } finally {
@@ -750,11 +903,53 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       }
     }
 
+    function renderBatchSelector(videos) {
+      const box = document.getElementById('batchSelectorBox');
+      const grid = document.getElementById('batchCardsGrid');
+      box.classList.remove('hidden');
+
+      grid.innerHTML = videos.map((v, idx) => `
+        <div onclick="selectBatchVideo(${idx})" class="batch-card cursor-pointer p-3 rounded-xl border transition ${idx === 0 ? 'border-rose-500 bg-rose-50/60' : 'border-slate-200 bg-slate-50/50 hover:border-rose-300'}">
+          <div class="flex items-center justify-between mb-1">
+            <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-bold">Video ${idx + 1}</span>
+            <span class="text-[10px] font-bold text-rose-600">${v.framingType || ''}</span>
+          </div>
+          <p class="text-xs font-bold text-slate-900 line-clamp-1">${v.productName || 'Variasi ' + (idx + 1)}</p>
+          <p class="text-[11px] text-slate-600 line-clamp-2 mt-1">"${v.hooks?.[0]?.text || ''}"</p>
+        </div>
+      `).join('');
+    }
+
+    function selectBatchVideo(idx) {
+      if (!currentBatchList[idx]) return;
+      document.querySelectorAll('.batch-card').forEach((el, i) => {
+        if (i === idx) {
+          el.classList.add('border-rose-500', 'bg-rose-50/60');
+          el.classList.remove('border-slate-200', 'bg-slate-50/50');
+        } else {
+          el.classList.remove('border-rose-500', 'bg-rose-50/60');
+          el.classList.add('border-slate-200', 'bg-slate-50/50');
+        }
+      });
+      currentPlanData = currentBatchList[idx];
+      localStorage.setItem(STORAGE_KEY_LAST_RESULT, JSON.stringify(currentPlanData));
+      renderResult(currentPlanData);
+    }
+
     function renderResult(plan) {
       if (!plan) return;
       copyBuffer = {};
       document.getElementById('resultContainer').classList.remove('hidden');
       document.getElementById('currentProductTitle').textContent = `${plan.productName || 'Konten Baru'} (${plan.framingType || 'Video'})`;
+
+      // Kartu Diagnosis (jika ada)
+      const diagBox = document.getElementById('rescueDiagnosisBox');
+      if (plan.diagnosis && plan.diagnosis.trim().length > 5) {
+        diagBox.classList.remove('hidden');
+        document.getElementById('rescueDiagnosisText').textContent = plan.diagnosis;
+      } else {
+        diagBox.classList.add('hidden');
+      }
 
       // 1. Render Hooks & Mockup
       const hooksList = document.getElementById('hookOptionsList');
@@ -779,9 +974,9 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       const st = plan.styling || {};
       const items = [
         { label: 'Hijab', data: st.hijab },
-        { label: 'Atasan', data: st.top },
-        { label: 'Bawahan', data: st.bottom },
-        { label: 'Alas Kaki / Tas', data: st.shoes }
+        { label: 'Atasan / Fokus', data: st.top },
+        { label: 'Bawahan / Pendukung', data: st.bottom },
+        { label: 'Alas Kaki / Aksesori', data: st.shoes }
       ];
       document.getElementById('stylingCardsGrid').innerHTML = items.map(it => `
         <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
@@ -795,7 +990,10 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       `).join('');
       document.getElementById('silhouetteTipText').textContent = st.silhouetteTip || '';
 
-      // 3. Render Storyboard Visual
+      // 3. Render Storyboard Visual (Dengan Deteksi Kategori Makeup & Green Screen)
+      const selectedCat = document.getElementById('categoryInput').value;
+      const selectedSample = document.getElementById('sampleModeInput').value;
+
       document.getElementById('storyboardGrid').innerHTML = (plan.storyboard || []).map(sc => `
         <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50/50 flex flex-col justify-between space-y-2.5">
           <div>
@@ -804,7 +1002,7 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
               <span class="text-[10px] font-bold text-slate-600">${sc.framing}</span>
             </div>
             <div class="bg-white border border-slate-200 rounded-xl p-2 flex items-center justify-center">
-              ${getFramingSVG(sc.framing)}
+              ${getFramingSVG(sc.framing, selectedCat, selectedSample)}
             </div>
             <p class="text-xs font-bold text-slate-900 mt-2.5">${sc.action}</p>
             <p class="text-[11px] text-slate-600 mt-1">🎯 Fokus: ${sc.visualCue}</p>
@@ -819,7 +1017,10 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       document.getElementById('voiceOverText').textContent = plan.voiceOver || '';
       document.getElementById('teleprompterContent').textContent = (plan.voiceOver || '').replace(/\//g, '\n\n');
 
-      // 5. CapCut Adjust & Steps
+      // 5. CapCut Sound, Adjust & Steps
+      document.getElementById('soundKeywordText').textContent = plan.capcut?.soundKeyword || 'aesthetic chill background music';
+      document.getElementById('soundTipText').textContent = plan.capcut?.soundTip || 'Kecilkan volume musik ke angka 8–12 agar suara Fara tetap paling jelas.';
+
       const adj = plan.capcut?.adjust || {};
       const adjList = [
         { name: 'Kecerahan', val: adj.kecerahan || '+8' },
@@ -841,7 +1042,21 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
         </label>
       `).join('');
 
-      // 6. Tab 4: TikTok SEO & Multi-Platform
+      // 6. Tab 4: Jam Tayang, Warm-Up, TikTok SEO & Multi-Platform
+      const pg = plan.postingGuide || {};
+      document.getElementById('bestTimeBadge').textContent = pg.bestTime || '12.00 / 19.00 WIB';
+      const warmups = pg.warmupSteps || [
+        'Tonton 2 video niche serupa sampai selesai 10 menit sebelum upload',
+        'Beri 1 komentar relevan pada video niche tersebut agar target audiens terbaca',
+        'Upload video lalu langsung sematkan komentar pertama di 5 menit awal'
+      ];
+      document.getElementById('warmupChecklist').innerHTML = warmups.map((w, i) => `
+        <label class="flex items-start gap-2.5 p-2.5 rounded-xl border border-amber-200 bg-white cursor-pointer">
+          <input type="checkbox" class="mt-0.5 rounded text-amber-600" />
+          <span class="text-xs text-slate-800">${i + 1}. ${w}</span>
+        </label>
+      `).join('');
+
       const dist = plan.distribution || {};
       const seoItems = [
         { key: 'seo_1', title: '1. Teks Kata Kunci Tersembunyi (Off-Screen SEO)', desc: 'Ketik di menu Teks TikTok lalu geser ke pinggir layar sampai hilang:', val: dist.tiktokOffscreen },
@@ -916,15 +1131,28 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       });
     }
 
-    function getFramingSVG(framing) {
+    // Ilustrasi Visual Framing Khusus (Green Screen, Makeup Close-Up, Medium, Full Body)
+    function getFramingSVG(framing, category, sampleMode) {
       const f = (framing || '').toUpperCase();
-      if (f.includes('CLOSE')) {
+      if (sampleMode === 'greenscreen' || f.includes('GREEN')) {
         return `<svg viewBox="0 0 120 140" class="w-24 h-28">
-          <rect x="20" y="5" width="80" height="130" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
-          <circle cx="60" cy="58" r="24" fill="#fda4af"/>
-          <path d="M36 58 Q60 25 84 58 L88 95 L32 95 Z" fill="#e11d48" opacity="0.25"/>
-          <path d="M25 133 Q60 92 95 133" fill="#cbd5e1"/>
-          <text x="60" y="20" text-anchor="middle" font-size="8" font-weight="bold" fill="#e11d48">CLOSE-UP</text>
+          <rect x="20" y="5" width="80" height="130" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+          <rect x="28" y="24" width="64" height="58" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+          <text x="60" y="50" text-anchor="middle" font-size="7" font-weight="bold" fill="#059669">FOTO KATALOG</text>
+          <text x="60" y="61" text-anchor="middle" font-size="6" fill="#047857">DI LAYAR BELAKANG</text>
+          <circle cx="44" cy="98" r="11" fill="#fda4af"/>
+          <path d="M29 133 Q44 108 59 133" fill="#e11d48" opacity="0.4"/>
+          <text x="60" y="16" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#047857">GREEN SCREEN</text>
+        </svg>`;
+      } else if (category === 'Makeup & Skincare' || f.includes('CLOSE')) {
+        return `<svg viewBox="0 0 120 140" class="w-24 h-28">
+          <rect x="20" y="5" width="80" height="130" rx="10" fill="#fff1f2" stroke="#fda4af" stroke-width="2"/>
+          <circle cx="60" cy="64" r="27" fill="#fecdd3"/>
+          <path d="M33 64 Q60 22 87 64 L91 105 L29 105 Z" fill="#e11d48" opacity="0.22"/>
+          <ellipse cx="50" cy="60" rx="5" ry="3" fill="#1e293b"/>
+          <ellipse cx="70" cy="60" rx="5" ry="3" fill="#1e293b"/>
+          <path d="M53 76 Q60 81 67 76" stroke="#e11d48" stroke-width="2" fill="none"/>
+          <text x="60" y="18" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#e11d48">CLOSE-UP WAJAH</text>
         </svg>`;
       } else if (f.includes('MEDIUM')) {
         return `<svg viewBox="0 0 120 140" class="w-24 h-28">
@@ -960,7 +1188,6 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       }
     }
 
-    // Pemutar Audio Latihan (iOS & Android)
     function playVoiceGuide(rate = 1.0) {
       if (!('speechSynthesis' in window)) {
         return alert('Browser ini tidak mendukung pemutar suara otomatis.');
@@ -991,7 +1218,6 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       }
     }
 
-    // Mini Teleprompter
     function openTeleprompter() {
       document.getElementById('teleprompterModal').classList.remove('hidden');
       resetTeleprompterScroll();
@@ -1020,7 +1246,7 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       document.getElementById('teleprompterScrollArea').scrollTop = 0;
     }
 
-    // Jadwal & Anti-Spam
+    // Jadwal, Buka Ulang & Anti-Spam
     function getScheduleData() {
       try {
         return JSON.parse(localStorage.getItem(STORAGE_KEY_SCHEDULE)) || [];
@@ -1058,8 +1284,6 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       if (!item) return;
 
       let planToLoad = item.planData || null;
-
-      // Pemulihan otomatis untuk jadwal lama yang dicatat sebelum pembaruan
       if (!planToLoad) {
         try {
           const lastSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_LAST_RESULT) || 'null');
@@ -1170,7 +1394,6 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
       reader.readAsText(file);
     }
 
-    // Copy Helpers
     function copyFromBuffer(key, btn) {
       const text = copyBuffer[key] || '';
       navigator.clipboard.writeText(text).then(() => {
