@@ -385,7 +385,7 @@
       <div class="p-4 border-b border-slate-100 flex items-center justify-between">
         <div>
           <h3 class="text-base font-bold text-slate-900">📅 Riwayat & Jadwal Upload</h3>
-          <p class="text-[11px] text-slate-500">Mencegah upload baju yang sama secara berurutan</p>
+          <p class="text-[11px] text-slate-500">Ketuk kartu atau tombol "Buka" untuk melihat ulang panduan lengkapnya</p>
         </div>
         <button onclick="closeScheduleModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">✕</button>
       </div>
@@ -614,7 +614,6 @@
         }
       }
 
-      // Cadangan terakhir: cari otomatis nama model Flash terbaru dari akun Google AI Studio
       try {
         const discovered = await discoverActiveFlashModel(apiKey);
         if (discovered && !FALLBACK_MODELS.includes(discovered)) {
@@ -1047,10 +1046,44 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
         framing: currentPlanData.framingType || 'Video',
         hook: currentPlanData.hooks?.[0]?.text || '',
         dateLabel: todayLabel,
-        done: false
+        done: false,
+        planData: JSON.parse(JSON.stringify(currentPlanData))
       });
       saveScheduleData(list);
-      alert('Berhasil dicatat ke Jadwal Upload!');
+      alert('Berhasil dicatat ke Jadwal Upload! Panduan lengkapnya bisa dibuka kembali kapan saja di menu Jadwal.');
+    }
+    function openSavedSchedulePlan(idx) {
+      const list = getScheduleData();
+      const item = list[idx];
+      if (!item) return;
+
+      let planToLoad = item.planData || null;
+
+      // Pemulihan otomatis untuk jadwal lama yang dicatat sebelum pembaruan
+      if (!planToLoad) {
+        try {
+          const lastSaved = JSON.parse(localStorage.getItem(STORAGE_KEY_LAST_RESULT) || 'null');
+          if (lastSaved && lastSaved.productName === item.product) {
+            planToLoad = lastSaved;
+            item.planData = lastSaved;
+            saveScheduleData(list);
+          }
+        } catch (e) {}
+      }
+
+      if (!planToLoad) {
+        return alert('Jadwal lama ini hanya menyimpan ringkasan judul. Silakan buat ulang satu kali lalu tekan "Catat ke Jadwal" agar panduan 4 tab-nya tersimpan permanen.');
+      }
+
+      currentPlanData = planToLoad;
+      localStorage.setItem(STORAGE_KEY_LAST_RESULT, JSON.stringify(planToLoad));
+      renderResult(planToLoad);
+      closeScheduleModal();
+
+      const resEl = document.getElementById('resultContainer');
+      if (resEl) {
+        resEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
     function checkAntiSpamWarning() {
       const list = getScheduleData();
@@ -1070,17 +1103,21 @@ Keluarkan HANYA JSON valid dengan struktur persis berikut:
         el.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">Belum ada riwayat konten tersimpan.</p>';
       } else {
         el.innerHTML = list.map((item, idx) => `
-          <div class="p-3 rounded-xl border ${item.done ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200'} flex items-center justify-between gap-2">
-            <div>
-              <div class="flex items-center gap-1.5">
+          <div onclick="openSavedSchedulePlan(${idx})" class="cursor-pointer p-3 rounded-xl border ${item.done ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200 hover:border-rose-300'} flex items-center justify-between gap-2 transition">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-bold">${item.dateLabel}</span>
                 <span class="text-[10px] font-bold text-rose-600">${item.framing}</span>
+                ${item.done ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Sudah Tayang</span>' : ''}
               </div>
-              <p class="text-xs font-bold text-slate-900 mt-1">${item.product}</p>
+              <p class="text-xs font-bold text-slate-900 mt-1 truncate">${item.product}</p>
               <p class="text-[11px] text-slate-500 line-clamp-1">"${item.hook}"</p>
             </div>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button onclick="toggleScheduleDone(${idx})" class="px-2.5 py-1.5 rounded-lg ${item.done ? 'bg-slate-200 text-slate-700' : 'bg-emerald-600 text-white'} text-[11px] font-bold">
+            <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
+              <button onclick="openSavedSchedulePlan(${idx})" class="px-2.5 py-1.5 rounded-lg bg-rose-600 text-white text-[11px] font-bold active:scale-95">
+                📂 Buka
+              </button>
+              <button onclick="toggleScheduleDone(${idx})" class="px-2 py-1.5 rounded-lg ${item.done ? 'bg-slate-200 text-slate-700' : 'bg-emerald-600 text-white'} text-[11px] font-bold">
                 ${item.done ? 'Batal' : '✓ Tayang'}
               </button>
               <button onclick="deleteScheduleItem(${idx})" class="px-2 py-1.5 rounded-lg bg-red-50 text-red-600 text-[11px] font-bold">🗑️</button>
